@@ -3,43 +3,39 @@ package main
 import "sync"
 
 func main() {
-
-	side := make(chan float64)
 	area := make(chan float64)
 	vol := make(chan float64)
 	peri := make(chan float64)
 
-	var inputwg sync.WaitGroup
-	inputwg.Add(1)
-	go func() {
-		defer inputwg.Done()
-		s := DataInput("Enter the side:")
-		side <- s
-		close(side)
-	}()
-	inputwg.Wait()
+	inputString := DataInput("Enter the side: ")
 
 	var wg sync.WaitGroup
-	s := <-side
+
 	wg.Add(1)
 	go func(side float64) {
 		defer wg.Done()
 		area <- CalArea(side)
-	}(s)
+		close(area)
+	}(inputString)
 
 	wg.Add(1)
 	go func(side float64) {
 		defer wg.Done()
 		vol <- CalCube(side)
-	}(s)
+		close(vol)
+	}(inputString)
 
 	wg.Add(1)
 	go func(side float64) {
 		defer wg.Done()
 		peri <- CalPeri(side)
-	}(s)
+		close(peri)
+	}(inputString)
 
+	a := <-area
+	v := <-vol
+	p := <-peri
 	wg.Wait()
 
-	process(area, vol, peri)
+	process(a, v, p)
 }

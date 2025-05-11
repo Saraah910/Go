@@ -20,8 +20,8 @@ func DataInput(inputData string) float64 {
 
 }
 
-func process(area chan float64, cube chan float64, peri chan float64) {
-	fmt.Printf("The details: \nArea: %v\nCube: %v\nPerimeter: %v", <-area, <-cube, <-peri)
+func process(area float64, cube float64, peri float64) {
+	fmt.Printf("The details: \nArea: %v\nCube: %v\nPerimeter: %v", area, cube, peri)
 }
 
 func CalArea(side float64) float64 {
