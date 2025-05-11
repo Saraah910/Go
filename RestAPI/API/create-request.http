@@ -1,0 +1,9 @@
+POST http://localhost:3000/events
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGFiYy5jb20iLCJleHBpcnkiOjE3NDY3MDA5OTUsInVzZXJJRCI6Mn0.5QiI7kK13yv-MQlbfG79M0b2MTkBWPyDjjp1z743Mf8
+
+{
+    "title": "event-alekh",
+    "description": "new event",
+    "location": "test 1 location"
+}

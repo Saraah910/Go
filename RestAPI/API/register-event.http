@@ -1,0 +1,2 @@
+POST http://localhost:3000/events/2/register
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGFiYy5jb20iLCJleHBpcnkiOjE3NDY0ODQ5NTQsInVzZXJJRCI6MX0.jK77DbBxMqoxkitKWbrLEcn79xZ2ioAp8cjRxCst1AA
