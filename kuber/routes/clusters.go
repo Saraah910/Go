@@ -53,6 +53,39 @@ func getClusterByID(context *gin.Context) {
 
 }
 
+func updateCluster(context *gin.Context) {
+	keyString := context.Param("id")
+	clusterID, err := strconv.ParseInt(keyString, 10, 64)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cluster id not exists", "Error": err.Error()})
+		return
+	}
+	cluster, err := models.GetClusterById(clusterID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cluster id not exists", "Error": err.Error()})
+		return
+	}
+	userId := context.GetInt64("userID")
+	if userId == cluster.UserID {
+		context.JSON(http.StatusUnauthorized, gin.H{"Message": "User not authorized"})
+		return
+	}
+	var newCluster models.Kube
+	err = context.ShouldBindJSON(&newCluster)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Check parameters", "Error": err.Error()})
+		return
+	}
+	newCluster.ClusterID = clusterID
+	err = newCluster.UpdateCluster(clusterID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot update cluster"})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Cluster": newCluster, "Message": "Successful"})
+
+}
+
 func performAction(context *gin.Context) {
 	keyString := context.Param("id")
 	action := context.Param("action")

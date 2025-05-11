@@ -1,0 +1,7 @@
+PUT http://localhost:8000/kube/clusters/list/1/update
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzAxMTg1MiwidXNlcklEIjoxfQ.TTBvsb1eijo3tfZ1qf8NpP-WONm1LywdizC2MrKj-v8
+
+{
+    "cluster_name": "snowhite-II"
+}

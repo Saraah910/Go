@@ -66,3 +66,15 @@ func GetClusterById(clusterID int64) (*Kube, error) {
 	}
 	return &cluster, nil
 }
+
+func (c *Kube) UpdateCluster(clusterID int64) error {
+	query := `UPDATE kubeclusters SET cluster_name = ? WHERE cluster_id = ?`
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(c.ClusterName, c.ClusterID)
+	return err
+}
