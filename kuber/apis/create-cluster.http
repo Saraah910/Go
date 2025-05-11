@@ -1,0 +1,9 @@
+POST http://localhost:8000/kube/clusters/list
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0Njk5Njg3OSwidXNlcklEIjoxfQ.h4-aZje_ABV2ZoAtuifSeP0QVsjY9cbtul4RUbMCuGI
+
+{
+    "cluster_name": "snowhite",
+    "provisioner": "Nutanix",
+    "kubeconfig_path": "/kube/sample.conf"
+}

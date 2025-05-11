@@ -40,7 +40,7 @@ func createUserTable() {
 		cluster_name TEXT NOT NULL,
 		provisioner TEXT NOT NULL,
 		kubeconfig_path TEXT NOT NULL,
-		status TEXT NOT NULL, 
+		status TEXT , 
 		user_id INTEGER,
 		FOREIGN KEY(user_id) REFERENCES users(id)
 	)
