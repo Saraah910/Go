@@ -31,7 +31,7 @@ func main() {
 
 func launchConsole(clusterName string, done chan<- string) {
 	fmt.Printf("⚙️ Launching the console for cluster %v\n", clusterName)
-	time.Sleep(time.Duration(1+len(clusterName)%3) * time.Second)
+	time.Sleep(time.Duration(1+len(clusterName)) * time.Second)
 
 	done <- fmt.Sprintf("✅ Launched console for cluster %v", clusterName)
 
