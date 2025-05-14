@@ -1,7 +1,9 @@
 PUT http://localhost:8000/kube/clusters/list/1/update
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzAxMTg1MiwidXNlcklEIjoxfQ.TTBvsb1eijo3tfZ1qf8NpP-WONm1LywdizC2MrKj-v8
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzIyNzQ2OSwidXNlcklEIjoxfQ.P_A6ZCQ5XAowrggrtUy3doasY4j5-EqCY8LDIzjOcrY
 
 {
-    "cluster_name": "snowhite-II"
+    "cluster_name": "updated-cluster, snowhite",
+    "provisioner": "aks",
+    "kubeconfig_path": "/kubeconfig/new"
 }

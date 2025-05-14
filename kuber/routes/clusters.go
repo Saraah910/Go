@@ -66,7 +66,8 @@ func updateCluster(context *gin.Context) {
 		return
 	}
 	userId := context.GetInt64("userID")
-	if userId == cluster.UserID {
+
+	if userId != cluster.UserID {
 		context.JSON(http.StatusUnauthorized, gin.H{"Message": "User not authorized"})
 		return
 	}

@@ -19,7 +19,7 @@ package main
 // 		fmt.Println(<-results)
 // 	}
 
-// }
+// // }
 
 // func fibonacci(n int) int {
 // 	if n <= 1 {
@@ -31,6 +31,7 @@ package main
 // 	for n := range jobs {
 // 		results <- fibonacci(n)
 // 	}
+// }
 // func greet(name string, c chan string) {
 // 	for i := 1; i <= 5; i++ {
 // 		c <- name

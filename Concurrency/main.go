@@ -1,41 +1,38 @@
 package main
 
-import "sync"
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	area := make(chan float64)
-	vol := make(chan float64)
-	peri := make(chan float64)
+	clusters := []string{"thanosajksjhfk", "snowhitesjdfhskdfheig", "leet", "an", "saurabhsakshi"}
+	done := make(chan string, len(clusters))
 
-	inputString := DataInput("Enter the side: ")
+	for _, clusterName := range clusters {
+		go launchConsole(clusterName, done)
+	}
+	launchedConsoles := 0
+	for {
+		select {
+		case msg := <-done:
+			fmt.Println(msg)
+			launchedConsoles++
+			if launchedConsoles == len(clusters) {
+				fmt.Println("All consoles launched successfully.")
+			}
+		default:
+			fmt.Println("🛠️ Main function is running..")
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
 
-	var wg sync.WaitGroup
+}
 
-	wg.Add(1)
-	go func(side float64) {
-		defer wg.Done()
-		area <- CalArea(side)
-		close(area)
-	}(inputString)
+func launchConsole(clusterName string, done chan<- string) {
+	fmt.Printf("⚙️ Launching the console for cluster %v\n", clusterName)
+	time.Sleep(time.Duration(1+len(clusterName)%3) * time.Second)
 
-	wg.Add(1)
-	go func(side float64) {
-		defer wg.Done()
-		vol <- CalCube(side)
-		close(vol)
-	}(inputString)
+	done <- fmt.Sprintf("✅ Launched console for cluster %v", clusterName)
 
-	wg.Add(1)
-	go func(side float64) {
-		defer wg.Done()
-		peri <- CalPeri(side)
-		close(peri)
-	}(inputString)
-
-	a := <-area
-	v := <-vol
-	p := <-peri
-	wg.Wait()
-
-	process(a, v, p)
 }
