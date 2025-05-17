@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"example.com/kuber/Utils"
 	"example.com/kuber/models"
@@ -21,7 +23,7 @@ func signUpUser(context *gin.Context) {
 	var user models.Users
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot bind user parameters."})
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot bind user parameters.", "Error": err.Error()})
 		return
 	}
 	err = user.CreateUser()
@@ -50,5 +52,49 @@ func loginUser(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"Message": "Succesfully logged in user", "token": token})
+}
 
+func logoutUser(context *gin.Context) {
+	// userID := context.GetInt64("userID")
+
+}
+
+func getPermissions(context *gin.Context) {
+	userId := context.GetInt64("userID")
+
+	role, permission, err := models.GetPermission(userId)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "User not found.", "Error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Message": "Succesfully fetched permissions nd roles", "Roles": role, "Permission": permission})
+}
+
+func deleteUser(context *gin.Context) {
+	keyString := context.Param("id")
+	tbdID, err := strconv.ParseInt(keyString, 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "User not found.", "Error": err.Error()})
+		return
+	}
+	userID := context.GetInt64("userID")
+	fmt.Println(tbdID, userID)
+	if tbdID != userID {
+		role, permission, err := models.GetPermission(userID)
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"Message": "Unauthorized to delete.", "Error": err.Error()})
+			return
+		}
+		if role != "admin" && permission != "full" {
+			context.JSON(http.StatusUnauthorized, gin.H{"Message": "Unauthorized", "Error": err})
+			return
+		}
+	}
+
+	err = models.DeleteUser(tbdID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot delete user.", "Error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Message": "Succesfully deleted user"})
 }

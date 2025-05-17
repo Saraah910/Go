@@ -26,6 +26,15 @@ func postCluster(context *gin.Context) {
 		return
 	}
 	userID := context.GetInt64("userID")
+	role, permission, err := models.GetPermission(userID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot get roles and permissions"})
+		return
+	}
+	if role != "admin" || (permission != "write" && permission != "full") {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "no permission to create cluster."})
+		return
+	}
 	cluster.Status = "Completed"
 	cluster.UserID = userID
 

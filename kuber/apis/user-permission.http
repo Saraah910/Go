@@ -1,0 +1,2 @@
+GET http://localhost:8000/kube/users/list/permission
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzQ4OTUzMiwidXNlcklEIjoyfQ.43TWsAoat1F8pg94Bph8F8KEK-RxlXZhqYTLCxLF8G8

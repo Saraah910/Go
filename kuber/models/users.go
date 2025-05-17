@@ -8,9 +8,14 @@ import (
 )
 
 type Users struct {
-	Id       int64
-	Email    string `binding:"required"`
-	Password string `binding:"required"`
+	Id            int64
+	Email         string `json:"email" binding:"required"`
+	Password      string `json:"password" binding:"required"`
+	Role          string `json:"role"`
+	OrgName       string `json:"org_name"`
+	OrgDepartment string `json:"org_department"`
+	CityLocation  string `json:"city_location"`
+	Permission    string `json:"permission"`
 }
 
 func FetchAllUsers() ([]Users, error) {
@@ -24,7 +29,7 @@ func FetchAllUsers() ([]Users, error) {
 
 	for rows.Next() {
 		var user Users
-		err := rows.Scan(&user.Id, &user.Email, &user.Password)
+		err := rows.Scan(&user.Id, &user.Email, &user.Password, &user.Role, &user.OrgName, &user.OrgDepartment, &user.CityLocation, &user.Permission)
 		if err != nil {
 			return nil, err
 		}
@@ -35,7 +40,7 @@ func FetchAllUsers() ([]Users, error) {
 
 func (u *Users) CreateUser() error {
 	query := `
-	INSERT INTO users(email, password) VALUES(?,?)
+	INSERT INTO users(email, password, role, org_name, org_department, city_location, permission) VALUES(?,?,?,?,?,?,?)
 	`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
@@ -46,7 +51,7 @@ func (u *Users) CreateUser() error {
 	if err != nil {
 		return err
 	}
-	result, err := stmt.Exec(u.Email, hashedPassword)
+	result, err := stmt.Exec(u.Email, hashedPassword, u.Role, u.OrgName, u.OrgDepartment, u.CityLocation, u.Permission)
 	if err != nil {
 		return err
 	}
@@ -72,4 +77,23 @@ func (u *Users) ValidateCreds() error {
 		return errors.New("password does not match")
 	}
 	return nil
+}
+
+func GetPermission(userID int64) (string, string, error) {
+	query := `SELECT role, permission FROM users WHERE id = ?`
+	row := db.DB.QueryRow(query, userID)
+	var role string
+	var permission string
+	err := row.Scan(&role, &permission)
+	return role, permission, err
+}
+
+func DeleteUser(userID int64) error {
+	query := `DELETE FROM users WHERE id = ?`
+	result, err := db.DB.Exec(query, userID)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	_, err = result.RowsAffected()
+	return err
 }

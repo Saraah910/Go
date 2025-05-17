@@ -26,7 +26,12 @@ func createUserTable() {
 	CREATE TABLE IF NOT EXISTS users(
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		email TEXT NOT NULL UNIQUE,
-		password TEXT NOT NULL
+		password TEXT NOT NULL,
+		role TEXT NOT NULL,
+		org_name TEXT NOT NULL,
+		org_department TEXT NOT NULL,
+		city_location TEXT NOT NULL,
+		permission TEXT NOT NULL
 	)
 	`
 	_, err := DB.Exec(usersTable)

@@ -2,6 +2,11 @@ POST http://localhost:8000/users/signup
 Content-Type: application/json
 
 {
-    "email":"test1@gmail.com",
-    "password":"test"
+    "email":"test4@gmail.com",
+    "password":"test",
+    "role":"sakshi",
+    "org_name":"nutanix",
+    "org_department":"ps",
+    "city_location":"blr",
+    "permission":"full"
 }

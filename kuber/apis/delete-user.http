@@ -1,0 +1,2 @@
+DELETE http://localhost:8000/users/4/delete
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3Q0QGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzQ5MzAwMCwidXNlcklEIjo2fQ.ufGTUKYklFOmp8AkIzi4Ua9jO9G9NShXZxVveYiIOFs

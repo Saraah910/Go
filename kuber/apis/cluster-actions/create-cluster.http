@@ -1,6 +1,6 @@
 POST http://localhost:8000/kube/clusters/list
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0Njk5Njg3OSwidXNlcklEIjoxfQ.h4-aZje_ABV2ZoAtuifSeP0QVsjY9cbtul4RUbMCuGI
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzQ4OTQ1NSwidXNlcklEIjoyfQ.MFvbYA8ok_8FEKEiQaoEyzmmwm7TviUl06iC3QL8krQ
 
 {
     "cluster_name": "snowhite",
