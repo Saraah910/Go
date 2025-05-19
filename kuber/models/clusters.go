@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"example.com/kuber/db"
 )
@@ -38,25 +39,25 @@ func GetAllClusters() ([]Kube, error) {
 
 func (k *Kube) SaveCluster() error {
 	query := `
-	INSERT INTO kubeclusters(cluster_name,provisioner,kubeconfig_path,status,user_id) VALUES(?,?,?,?,?)
+	INSERT INTO kubeclusters(cluster_name,provisioner,kubeconfig_path,status,user_id) VALUES($1,$2,$3,$4,$5) RETURNING cluster_id
 	`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	result, err := stmt.Exec(k.ClusterName, k.Provisioner, k.KubeconfigFilePath, k.Status, k.UserID)
+	err = db.DB.QueryRow(query, k.ClusterName, k.Provisioner, k.KubeconfigFilePath, k.Status, k.UserID).Scan(&k.ClusterID)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			return errors.New("cluster already exists")
+		}
 		return err
 	}
-	clusterID, err := result.LastInsertId()
-	k.ClusterID = clusterID
-
-	return err
+	return nil
 }
 
 func GetClusterById(clusterID int64) (*Kube, error) {
-	query := `SELECT * FROM kubeclusters WHERE cluster_id = ?`
+	query := `SELECT * FROM kubeclusters WHERE cluster_id = $1`
 	row := db.DB.QueryRow(query, clusterID)
 	var cluster Kube
 
@@ -68,7 +69,7 @@ func GetClusterById(clusterID int64) (*Kube, error) {
 }
 
 func (c *Kube) UpdateCluster(clusterID int64) error {
-	query := `UPDATE kubeclusters SET cluster_name = ?, provisioner = ?, kubeconfig_path = ? WHERE cluster_id = ?`
+	query := `UPDATE kubeclusters SET cluster_name = $1, provisioner = $2, kubeconfig_path = $3 WHERE cluster_id = $4`
 	stmt, err := db.DB.Prepare(query)
 
 	if err != nil {

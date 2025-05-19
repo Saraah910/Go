@@ -1,9 +1,9 @@
 POST http://localhost:8000/kube/clusters/list
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzQ4OTQ1NSwidXNlcklEIjoyfQ.MFvbYA8ok_8FEKEiQaoEyzmmwm7TviUl06iC3QL8krQ
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3Q0QGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzY4OTkwOSwidXNlcklEIjo1fQ.qbovBXqZDB2jKdj08w4iFz-dnyxQOGBk2rc5qopivaQ
 
 {
-    "cluster_name": "snowhite",
+    "cluster_name": "snowhite-II-admin",
     "provisioner": "Nutanix",
     "kubeconfig_path": "/kube/sample.conf"
 }

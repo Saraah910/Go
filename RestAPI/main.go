@@ -11,5 +11,5 @@ func main() {
 	server := gin.Default()
 	Routes.RegisterRoutes(server)
 
-	server.Run(":3000")
+	server.Run("localhost:3000")
 }

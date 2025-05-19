@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"example.com/kuber/Utils"
 	"example.com/kuber/db"
@@ -40,7 +41,7 @@ func FetchAllUsers() ([]Users, error) {
 
 func (u *Users) CreateUser() error {
 	query := `
-	INSERT INTO users(email, password, role, org_name, org_department, city_location, permission) VALUES(?,?,?,?,?,?,?)
+	INSERT INTO users(email, password, role, org_name, org_department, city_location, permission) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id
 	`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
@@ -51,17 +52,18 @@ func (u *Users) CreateUser() error {
 	if err != nil {
 		return err
 	}
-	result, err := stmt.Exec(u.Email, hashedPassword, u.Role, u.OrgName, u.OrgDepartment, u.CityLocation, u.Permission)
+	err = db.DB.QueryRow(query, u.Email, hashedPassword, u.Role, u.OrgName, u.OrgDepartment, u.CityLocation, u.Permission).Scan(&u.Id)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			return errors.New("email already exists")
+		}
 		return err
 	}
-	userID, err := result.LastInsertId()
-	u.Id = userID
-	return err
+	return nil
 }
 
 func (u *Users) ValidateCreds() error {
-	query := `SELECT id, password FROM users WHERE email = ?`
+	query := `SELECT id, password FROM users WHERE email = $1`
 	stmt, err := db.DB.Prepare(query)
 	if err != nil {
 		return err
@@ -80,7 +82,7 @@ func (u *Users) ValidateCreds() error {
 }
 
 func GetPermission(userID int64) (string, string, error) {
-	query := `SELECT role, permission FROM users WHERE id = ?`
+	query := `SELECT role, permission FROM users WHERE id = $1`
 	row := db.DB.QueryRow(query, userID)
 	var role string
 	var permission string
@@ -89,7 +91,7 @@ func GetPermission(userID int64) (string, string, error) {
 }
 
 func DeleteUser(userID int64) error {
-	query := `DELETE FROM users WHERE id = ?`
+	query := `DELETE FROM users WHERE id = $1`
 	result, err := db.DB.Exec(query, userID)
 	if err != nil {
 		return errors.New(err.Error())
