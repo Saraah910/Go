@@ -109,3 +109,19 @@ func performAction(context *gin.Context) {
 	Concurrency.ConcurrentFunctions(action)
 	context.JSON(http.StatusOK, gin.H{"Cluster ID": clusterID, "Message": "Successful", "Action": action})
 }
+
+func deleteCluster(context *gin.Context) {
+	keyString := context.Param("id")
+	clusterID, err := strconv.ParseInt(keyString, 10, 64)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cluster id not exists", "Error": err.Error()})
+		return
+	}
+	err = models.DeleteCluster(clusterID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot delete cluster", "Error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Cluster ID": clusterID, "Message": "Successfully deleted cluster"})
+
+}

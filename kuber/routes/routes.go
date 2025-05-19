@@ -20,5 +20,6 @@ func Routes(server *gin.Engine) {
 	authenticationGroups.PUT("/kube/clusters/list/:id/update", updateCluster)
 	authenticationGroups.GET("/kube/users/list/permission", getPermissions)
 	authenticationGroups.DELETE("/users/:id/delete", deleteUser)
+	authenticationGroups.DELETE("/kube/clusters/:id/delete", deleteCluster)
 
 }

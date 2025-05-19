@@ -94,8 +94,15 @@ func DeleteUser(userID int64) error {
 	query := `DELETE FROM users WHERE id = $1`
 	result, err := db.DB.Exec(query, userID)
 	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
-	_, err = result.RowsAffected()
-	return err
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("no user found with the given ID")
+	}
+
+	return nil
 }

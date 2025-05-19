@@ -1,2 +1,2 @@
-DELETE http://localhost:8000/users/1/delete
+DELETE http://localhost:8000/kube/clusters/1/delete
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0NzY5NDU5NCwidXNlcklEIjoxfQ.HiJjZkDxxHBGxj723IHOeXDAkI6X06gY6iCT4Z7_CQE

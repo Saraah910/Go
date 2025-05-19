@@ -79,3 +79,20 @@ func (c *Kube) UpdateCluster(clusterID int64) error {
 	_, err = stmt.Exec(c.ClusterName, c.Provisioner, c.KubeconfigFilePath, c.ClusterID)
 	return err
 }
+
+func DeleteCluster(clusterID int64) error {
+	query := `DELETE FROM kubeclusters WHERE cluster_id = $1`
+	result, err := db.DB.Exec(query, clusterID)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("no cluster found with the given ID")
+	}
+
+	return nil
+}
