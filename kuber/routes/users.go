@@ -19,6 +19,42 @@ func getAllUsers(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"Message": "Succesfully fetched all users", "users": users})
 }
 
+func updateUser(context *gin.Context) {
+	keyString := context.Param("id")
+	tbdID, err := strconv.ParseInt(keyString, 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "User not found.", "Error": err.Error()})
+		return
+	}
+	userID := context.GetInt64("userID")
+	fmt.Println(tbdID, userID)
+
+	if tbdID != userID {
+		role, permission, err := models.GetPermission(userID)
+		if err != nil {
+			context.JSON(http.StatusUnauthorized, gin.H{"Message": "Unauthorized to update.", "Error": err.Error()})
+			return
+		}
+		if role != "admin" && permission != "full" {
+			context.JSON(http.StatusUnauthorized, gin.H{"Message": "Unauthorized", "Error": err})
+			return
+		}
+	}
+
+	var user models.Users
+	err = context.ShouldBindJSON(&user)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot bind user parameters.", "Error": err.Error()})
+		return
+	}
+	_, err = models.UpdateUser(tbdID, user)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot update user.", "Error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Message": "Succesfully updated user", "userID": tbdID})
+}
+
 func signUpUser(context *gin.Context) {
 	var user models.Users
 	err := context.ShouldBindJSON(&user)

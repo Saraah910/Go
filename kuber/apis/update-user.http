@@ -1,0 +1,13 @@
+PUT http://localhost:8000/users/2/update
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTA2NzY3OCwidXNlcklEIjoyfQ.rwIgxnH8Cbx2a-6dkQO397CK2Bm0VQxF9kjg-cGFOEI
+
+{
+    "email": "test2@gmail.com",
+    "password": "test",
+    "role": "sakshi",
+    "org_name": "nutanix",
+    "org_department": "ps",
+    "city_location": "blr",
+    "permission": "full"
+}

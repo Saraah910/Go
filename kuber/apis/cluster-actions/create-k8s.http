@@ -1,0 +1,28 @@
+POST http://localhost:8000/kube/clusters/create-cluster
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0ODQ2MjAxMCwidXNlcklEIjoxfQ.07O9DNnsJ1qxIo9ohTXC8EpfOfd3Z80pkPjsbvuLrI4
+
+{
+    "id": 1,
+    "name": "demo-cluster",
+    "provider": "nutanix",
+    "region": "local",
+    "workspace": "default",
+    "status": "creating",
+    "user_id": 123,
+    "created_at": "2025-05-27T00:00:00Z",
+    "updated_at": "2025-05-27T00:00:00Z",
+    "provider_config": {
+        "endpoint": "https://10.38.81.49:9440",
+        "username": "admin",
+        "password": "Nutanix/4u!",
+        "image_name": "ubuntu-20.04-cloud",
+        "subnet_uuid": "some-subnet-uuid",
+        "cluster_name": "demo-cluster",
+        "num_masters": 3,
+        "num_workers": 3,
+        "cpu": 2,
+        "memory_mb": 4096,
+        "disk_gb": 50,
+        "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD..."
+    }
+}

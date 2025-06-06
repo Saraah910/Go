@@ -2,97 +2,248 @@ package models
 
 import (
 	"errors"
-	"strings"
 
 	"example.com/kuber/db"
 )
 
-type Kube struct {
-	ClusterID          int64
-	ClusterName        string `json:"cluster_name" binding:"required"`
-	Provisioner        string `json:"provisioner" binding:"required"`
-	KubeconfigFilePath string `json:"kubeconfig_path" binding:"required"`
+// Cluster represents the cluster with basic details.
+type Cluster struct {
+	ID                 int64  `json:"id"`
+	Name               string `json:"name" binding:"required"`
+	Provisioner        string `json:"provisioner" binding:"required" validate:"oneof=aws azure gcp nutanix vmware"`
+	Region             string `json:"region" binding:"required"`
+	Workspace          string `json:"workspace" `
 	Status             string `json:"status"`
-	UserID             int64
+	UserID             int64  `json:"user_id"`
+	CreatedAt          string `json:"created_at"`
+	UpdatedAt          string `json:"updated_at"`
+	KubeconfigFilePath string `json:"kubeconfig_file_path" binding:"required"`
 }
 
-func GetAllClusters() ([]Kube, error) {
-	query := `SELECT * FROM kubeclusters`
+// GetAllClusters retrieves all clusters and fetches control planes, worker nodes, and storage containers from kubeconfig.
+func GetAllClusters() ([]map[string]interface{}, error) {
+	query := `SELECT id, name, provisioner, region, workspace, kubeconfig, user_id, created_at, updated_at, status FROM clusters`
 	rows, err := db.DB.Query(query)
 	if err != nil {
-		return nil, errors.New("cannot fetch the results")
+		return nil, errors.New("cannot fetch the results. check the kubeconfig file")
 	}
 	defer rows.Close()
-	var Clusters []Kube
 
+	var clusters []map[string]interface{}
 	for rows.Next() {
-		var Cluster Kube
-
-		err := rows.Scan(&Cluster.ClusterID, &Cluster.ClusterName, &Cluster.Provisioner, &Cluster.KubeconfigFilePath, &Cluster.Status, &Cluster.UserID)
+		var c Cluster
+		err := rows.Scan(
+			&c.ID,
+			&c.Name,
+			&c.Provisioner,
+			&c.Region,
+			&c.Workspace,
+			&c.KubeconfigFilePath,
+			&c.UserID,
+			&c.CreatedAt,
+			&c.UpdatedAt,
+			&c.Status,
+		)
 		if err != nil {
 			return nil, err
 		}
-		Clusters = append(Clusters, Cluster)
-	}
-	return Clusters, nil
-}
 
-func (k *Kube) SaveCluster() error {
-	query := `
-	INSERT INTO kubeclusters(cluster_name,provisioner,kubeconfig_path,status,user_id) VALUES($1,$2,$3,$4,$5) RETURNING cluster_id
-	`
-	stmt, err := db.DB.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	err = db.DB.QueryRow(query, k.ClusterName, k.Provisioner, k.KubeconfigFilePath, k.Status, k.UserID).Scan(&k.ClusterID)
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value") {
-			return errors.New("cluster already exists")
+		controlPlanes, workerNodes, storageContainers := fetchClusterDetailsFromKubeconfig(c.KubeconfigFilePath)
+
+		clusterMap := map[string]interface{}{
+			"id":                   c.ID,
+			"name":                 c.Name,
+			"provisioner":          c.Provisioner,
+			"region":               c.Region,
+			"workspace":            c.Workspace,
+			"status":               c.Status,
+			"user_id":              c.UserID,
+			"created_at":           c.CreatedAt,
+			"updated_at":           c.UpdatedAt,
+			"kubeconfig_file_path": c.KubeconfigFilePath,
+			"control_planes":       controlPlanes,
+			"worker_nodes":         workerNodes,
+			"storage_containers":   storageContainers,
 		}
-		return err
+		clusters = append(clusters, clusterMap)
+	}
+	return clusters, nil
+}
+
+func (c *Cluster) SaveCluster() error {
+	query := `INSERT INTO clusters (name, provisioner, region, workspace, kubeconfig, user_id, created_at, updated_at, status) 
+			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
+	err := db.DB.QueryRow(query,
+		c.Name,
+		c.Provisioner,
+		c.Region,
+		c.Workspace,
+		c.KubeconfigFilePath,
+		c.UserID,
+		c.CreatedAt,
+		c.UpdatedAt,
+		c.Status).Scan(&c.ID)
+	if err != nil {
+		return errors.New("cannot create cluster: " + err.Error())
 	}
 	return nil
 }
 
-func GetClusterById(clusterID int64) (*Kube, error) {
-	query := `SELECT * FROM kubeclusters WHERE cluster_id = $1`
-	row := db.DB.QueryRow(query, clusterID)
-	var cluster Kube
+func GetClusterByID(id int64) (map[string]interface{}, error) {
+	query := `SELECT id, name, provisioner, region, workspace, kubeconfig, user_id, created_at, updated_at, status 
+			  FROM clusters WHERE id = $1`
+	row := db.DB.QueryRow(query, id)
 
-	err := row.Scan(&cluster.ClusterID, &cluster.ClusterName, &cluster.Provisioner, &cluster.KubeconfigFilePath, &cluster.Status, &cluster.UserID)
+	var c Cluster
+	err := row.Scan(
+		&c.ID,
+		&c.Name,
+		&c.Provisioner,
+		&c.Region,
+		&c.Workspace,
+		&c.KubeconfigFilePath,
+		&c.UserID,
+		&c.CreatedAt,
+		&c.UpdatedAt,
+		&c.Status,
+	)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cannot fetch cluster by ID: " + err.Error())
 	}
-	return &cluster, nil
+	controlPlanes, workerNodes, storageContainers := fetchClusterDetailsFromKubeconfig(c.KubeconfigFilePath)
+
+	clusterMap := map[string]interface{}{
+		"id":                   c.ID,
+		"name":                 c.Name,
+		"provisioner":          c.Provisioner,
+		"region":               c.Region,
+		"workspace":            c.Workspace,
+		"status":               c.Status,
+		"user_id":              c.UserID,
+		"created_at":           c.CreatedAt,
+		"updated_at":           c.UpdatedAt,
+		"kubeconfig_file_path": c.KubeconfigFilePath,
+		"control_planes":       controlPlanes,
+		"worker_nodes":         workerNodes,
+		"storage_containers":   storageContainers,
+	}
+	return clusterMap, nil
 }
 
-func (c *Kube) UpdateCluster(clusterID int64) error {
-	query := `UPDATE kubeclusters SET cluster_name = $1, provisioner = $2, kubeconfig_path = $3 WHERE cluster_id = $4`
-	stmt, err := db.DB.Prepare(query)
-
+func GetClustersForUser(userID int64) ([]map[string]interface{}, error) {
+	query := `SELECT id, name, provisioner, region, workspace, kubeconfig, user_id, created_at, updated_at, status 
+			  FROM clusters WHERE user_id = $1`
+	rows, err := db.DB.Query(query, userID)
 	if err != nil {
-		return err
+		return nil, errors.New("cannot fetch clusters for user: " + err.Error())
 	}
-	defer stmt.Close()
-	_, err = stmt.Exec(c.ClusterName, c.Provisioner, c.KubeconfigFilePath, c.ClusterID)
-	return err
+	defer rows.Close()
+
+	var clusters []map[string]interface{}
+	for rows.Next() {
+		var c Cluster
+		err := rows.Scan(
+			&c.ID,
+			&c.Name,
+			&c.Provisioner,
+			&c.Region,
+			&c.Workspace,
+			&c.KubeconfigFilePath,
+			&c.UserID,
+			&c.CreatedAt,
+			&c.UpdatedAt,
+			&c.Status,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		clusterMap := map[string]interface{}{
+			"id":                   c.ID,
+			"name":                 c.Name,
+			"provisioner":          c.Provisioner,
+			"region":               c.Region,
+			"workspace":            c.Workspace,
+			"status":               c.Status,
+			"user_id":              c.UserID,
+			"created_at":           c.CreatedAt,
+			"updated_at":           c.UpdatedAt,
+			"kubeconfig_file_path": c.KubeconfigFilePath,
+		}
+		clusters = append(clusters, clusterMap)
+	}
+	return clusters, nil
 }
 
-func DeleteCluster(clusterID int64) error {
-	query := `DELETE FROM kubeclusters WHERE cluster_id = $1`
-	result, err := db.DB.Exec(query, clusterID)
+func GetClustersByWorkspaceName(workspace string) ([]map[string]interface{}, error) {
+	query := `SELECT id, name, provisioner, region, workspace, kubeconfig, user_id, created_at, updated_at, status 
+			  FROM clusters WHERE workspace = $1`
+	rows, err := db.DB.Query(query, workspace)
 	if err != nil {
-		return err
+		return nil, errors.New("cannot fetch clusters by workspace name: " + err.Error())
 	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return errors.New("no cluster found with the given ID")
-	}
+	defer rows.Close()
 
-	return nil
+	var clusters []map[string]interface{}
+	for rows.Next() {
+		var c Cluster
+		err := rows.Scan(
+			&c.ID,
+			&c.Name,
+			&c.Provisioner,
+			&c.Region,
+			&c.Workspace,
+			&c.KubeconfigFilePath,
+			&c.UserID,
+			&c.CreatedAt,
+			&c.UpdatedAt,
+			&c.Status,
+		)
+		if err != nil {
+			return nil, err
+		}
+		controlPlanes, workerNodes, storageContainers := fetchClusterDetailsFromKubeconfig(c.KubeconfigFilePath)
+
+		clusterMap := map[string]interface{}{
+			"id":                   c.ID,
+			"name":                 c.Name,
+			"provisioner":          c.Provisioner,
+			"region":               c.Region,
+			"workspace":            c.Workspace,
+			"status":               c.Status,
+			"user_id":              c.UserID,
+			"created_at":           c.CreatedAt,
+			"updated_at":           c.UpdatedAt,
+			"kubeconfig_file_path": c.KubeconfigFilePath,
+			"control_planes":       controlPlanes,
+			"worker_nodes":         workerNodes,
+			"storage_containers":   storageContainers,
+		}
+		clusters = append(clusters, clusterMap)
+	}
+	return clusters, nil
+}
+
+func GetKubeconfigFilePathByID(id int64) (string, error) {
+	query := `SELECT kubeconfig FROM clusters WHERE id = $1`
+	row := db.DB.QueryRow(query, id)
+
+	var kubeconfigFilePath string
+	err := row.Scan(&kubeconfigFilePath)
+	if err != nil {
+		return "", errors.New("cannot fetch kubeconfig file path: " + err.Error())
+	}
+	return kubeconfigFilePath, nil
+}
+
+func GetProvisionerByID(id int64) (string, error) {
+	query := `SELECT provisioner FROM clusters WHERE id = $1`
+	row := db.DB.QueryRow(query, id)
+
+	var provisioner string
+	err := row.Scan(&provisioner)
+	if err != nil {
+		return "", errors.New("cannot fetch provisioner: " + err.Error())
+	}
+	return provisioner, nil
 }

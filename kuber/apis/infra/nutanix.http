@@ -1,0 +1,18 @@
+POST http://localhost:8000/kube/infrastructure/nutanix
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0ODQ2MTYyMSwidXNlcklEIjoyfQ.S8NWy64iJBMxZPBrW_gGrYfn2yT_6wVGH3g3_MFyeYA
+
+{
+    "infra_name": "nutanix-DR",
+    "endpoint": "10.0.0.5",
+    "port": 9440,
+    "username": "admin",
+    "password": "Nutanix/4u!",
+    "cluster_name": "sigma",
+    "subnet_uuids": [
+        "123e4567-e89b-12d3-a456-426614174000",
+        "123e4567-e89b-12d3-a456-426614174001"
+    ],
+    "image_name": "ubuntu-20.04-template",
+    "insecure": false
+}

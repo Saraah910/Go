@@ -90,6 +90,42 @@ func GetPermission(userID int64) (string, string, error) {
 	return role, permission, err
 }
 
+func UpdateUser(userID int64, updatedUser Users) (int64, error) {
+	query := `
+	UPDATE users 
+	SET email = $1, password = $2, role = $3, org_name = $4, org_department = $5, city_location = $6, permission = $7 
+	WHERE id = $8 RETURNING id
+	`
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	hashedPassword, err := Utils.ConvertToHashString(updatedUser.Password)
+	if err != nil {
+		return 0, err
+	}
+
+	var userIDUpdated int64
+	err = stmt.QueryRow(
+		updatedUser.Email,
+		hashedPassword,
+		updatedUser.Role,
+		updatedUser.OrgName,
+		updatedUser.OrgDepartment,
+		updatedUser.CityLocation,
+		updatedUser.Permission,
+		userID,
+	).Scan(&userIDUpdated)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return userIDUpdated, nil
+}
+
 func DeleteUser(userID int64) error {
 	query := `DELETE FROM users WHERE id = $1`
 	result, err := db.DB.Exec(query, userID)
