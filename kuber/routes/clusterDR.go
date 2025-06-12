@@ -4,12 +4,23 @@ import (
 	"example.com/kuber/DR"
 	"example.com/kuber/models"
 	"github.com/gin-gonic/gin"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type ClusterDRRequest struct {
 	SourceClusterID      int64  `json:"source_cluster_id" binding:"required"`
 	DestinationClusterID int64  `json:"destination_cluster_id" binding:"required"`
 	DRtype               string `json:"dr_type" binding:"required" validate:"oneof=active-passive active-active"`
+}
+
+var gvrs = []schema.GroupVersionResource{
+	{Group: "apps", Version: "v1", Resource: "deployments"},
+	{Group: "", Version: "v1", Resource: "services"},
+	{Group: "", Version: "v1", Resource: "configmaps"},
+	{Group: "", Version: "v1", Resource: "secrets"},
+	{Group: "", Version: "v1", Resource: "persistentvolumeclaims"},
+	{Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"},
+	// Add custom CRDs here if needed
 }
 
 func clusterDR(context *gin.Context) {
@@ -32,6 +43,12 @@ func clusterDR(context *gin.Context) {
 		})
 		return
 	}
+	// if ClusterDRReq.DRtype == "active-passive" {
+	// 	context.JSON(400, gin.H{
+	// 		"error": "DR type is required",
+	// 	})
+	// 	return
+	// }
 	// Check if source and destination clusters exist
 	sourceCluster, err := models.GetClusterByID(ClusterDRReq.SourceClusterID)
 	if err != nil {
@@ -77,17 +94,36 @@ func clusterDR(context *gin.Context) {
 		})
 		return
 	}
-	SourceClient, err := DR.GetKubeClient(SourceKubeconfig)
+	SourceClient, _, sourceK8sClient, err := DR.GetDynamicClient(SourceKubeconfig)
 	if err != nil {
 		context.JSON(500, gin.H{
-			"error": "Failed to create source kube client: " + err.Error(),
+			"error": "Failed to create source dynamic client: " + err.Error(),
 		})
 		return
 	}
-	DestinationClient, err := DR.GetKubeClient(DestinationKubeconfig)
+	if sourceK8sClient == nil {
+		context.JSON(500, gin.H{
+			"error": "Failed to create source k8s client: client is nil",
+		})
+		return
+	}
+	if SourceClient == nil {
+		context.JSON(500, gin.H{
+			"error": "Failed to create source dynamic client: client is nil",
+		})
+		return
+	}
+	DestinationClient, _, _, err := DR.GetDynamicClient(DestinationKubeconfig)
 	if err != nil {
 		context.JSON(500, gin.H{
-			"error": "Failed to create destination kube client: " + err.Error(),
+			"error": "Failed to create destination dynamic client: " + err.Error(),
+		})
+		return
+	}
+
+	if DestinationClient == nil {
+		context.JSON(500, gin.H{
+			"error": "Failed to create destination dynamic client: client is nil",
 		})
 		return
 	}
@@ -104,7 +140,8 @@ func clusterDR(context *gin.Context) {
 		})
 		return
 	}
-	err = DR.PerformClusterDR(SourceClient, DestinationClient, povisioner, ClusterDRReq.DRtype)
+
+	err = DR.PerformClusterDR(SourceClient, DestinationClient, povisioner, ClusterDRReq.DRtype, gvrs, sourceK8sClient)
 	if err != nil {
 		context.JSON(500, gin.H{
 			"error": "Failed to perform cluster disaster recovery: " + err.Error(),

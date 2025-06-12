@@ -1,0 +1,106 @@
+func syncNamespaces(srcClient, dstClient dynamic.Interface) error {
+	// Add the namespace GVR (cluster-scoped resource)
+	namespaceGVR := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}
+	go watchAndSyncClusterScoped(namespaceGVR, srcClient, dstClient)
+	return nil
+func syncWorkloads(srcClient, dstClient dynamic.Interface, gvrs []schema.GroupVersionResource) error {
+	gvrs = []schema.GroupVersionResource{
+		{Group: "apps", Version: "v1", Resource: "deployments"},
+		{Group: "", Version: "v1", Resource: "services"},
+		{Group: "", Version: "v1", Resource: "configmaps"},
+		{Group: "", Version: "v1", Resource: "secrets"},
+		{Group: "", Version: "v1", Resource: "persistentvolumeclaims"},
+		{Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"},
+		for _, gvr := range gvrs {
+		go watchAndSync(gvr, srcClient, dstClient, namespace)
+		select {}
+func watchAndSyncClusterScoped(gvr schema.GroupVersionResource, sourceClient, destClient dynamic.Interface) {
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(sourceClient, 0, "", nil)
+	informer := factory.ForResource(gvr).Informer(	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			u := obj.(*unstructured.Unstructured)
+			u.SetResourceVersion("")
+			_, err := destClient.Resource(gvr).Create(context.TODO(), u, metav1.CreateOptions{})
+			if err != nil {
+				log.Printf("NS Add error: %v", err)
+			} else {
+				log.Printf("✅ Created namespace %s", u.GetName())
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			u := newObj.(*unstructured.Unstructured)
+			u.SetResourceVersion("")
+			_, err := destClient.Resource(gvr).Update(context.TODO(), u, metav1.UpdateOptions{})
+			if err != nil {
+				log.Printf("NS Update error: %v", err)
+			} else {
+				log.Printf("🔄 Updated namespace %s", u.GetName())
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			u := obj.(*unstructured.Unstructured)
+			err := destClient.Resource(gvr).Delete(context.TODO(), u.GetName(), metav1.DeleteOptions{})
+			if err != nil {
+				log.Printf("NS Delete error: %v", err)
+			} else {
+				log.Printf("🗑️ Deleted namespace %s", u.GetName())
+			}
+		},
+	}	stop := make(chan struct{})
+	go informer.Run(stop)
+	if !cache.WaitForCacheSync(stop, informer.HasSynced) {
+		log.Fatalf("Failed to sync namespace informer cache")
+	}
+func watchAndSync(gvr schema.GroupVersionResource, sourceClient, destClient dynamic.Interface, namespace string) {
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(sourceClient, 0, namespace, nil)
+	informer := factory.ForResource(gvr).Informer(	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			u := obj.(*unstructured.Unstructured)
+			u.SetResourceVersion("")
+			_, err := destClient.Resource(gvr).Namespace(namespace).Create(context.TODO(), u, metav1.CreateOptions{})
+			if err != nil {
+				log.Printf("Add error: %v", err)
+			} else {
+				log.Printf("✅ Created %s in %s", u.GetName(), namespace)
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			u := newObj.(*unstructured.Unstructured)
+			u.SetResourceVersion("")
+			_, err := destClient.Resource(gvr).Namespace(namespace).Update(context.TODO(), u, metav1.UpdateOptions{})
+			if err != nil {
+				log.Printf("Update error: %v", err)
+			} else {
+				log.Printf("🔄 Updated %s in %s", u.GetName(), namespace)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			u := obj.(*unstructured.Unstructured)
+			err := destClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), u.GetName(), metav1.DeleteOptions{})
+			if err != nil {
+				log.Printf("Delete error: %v", err)
+			} else {
+				log.Printf("🗑️ Deleted %s from %s", u.GetName(), namespace)
+			}
+		},
+	}	stop := make(chan struct{})
+	go informer.Run(stop)
+	if !cache.WaitForCacheSync(stop, informer.HasSynced) {
+		log.Fatalf("Failed to sync cache")
+	}
+func syncPersistentVolumes(src, dst *kubernetes.Clientset, provisioner string) error {
+	pvs, err := src.CoreV1().PersistentVolumes().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	for _, pv := range pvs.Items {
+		if strings.Contains(pv.Spec.StorageClassName, provisioner) {
+			pv.ResourceVersion = ""
+			_, err := dst.CoreV1().PersistentVolumes().Create(context.TODO(), &pv, metav1.CreateOptions{})
+			if err != nil && !errors.IsAlreadyExists(err) {
+				fmt.Printf("⚠️ PV %s replication failed: %v\n", pv.Name, err)
+			}
+		}
+	}
+	return nil
+}

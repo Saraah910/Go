@@ -1,0 +1,2 @@
+GET http://localhost:8000/kube/cluster/actions/2/namespaces
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0

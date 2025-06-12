@@ -10,28 +10,32 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func fetchClusterDetailsFromKubeconfig(kubeconfigPath string) (controlPlanes []interface{}, workerNodes []interface{}, storageContainers []interface{}) {
+func GetKubeClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {
 		fmt.Printf("Failed to load kubeconfig: %v\n", err)
-		return
+		return nil, err
 	}
-
 	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		fmt.Printf("Failed to create Kubernetes client: %v\n", err)
+		return nil, err
+	}
+	return clientset, nil
+}
+
+func fetchClusterDetailsFromKubeconfig(kubeconfigPath string) (controlPlanes []interface{}, workerNodes []interface{}, storageContainers []interface{}) {
+	clientset, err := GetKubeClient(kubeconfigPath)
 	if err != nil {
 		fmt.Printf("Failed to create Kubernetes client: %v\n", err)
 		return
 	}
-
 	ctx := context.Background()
-
-	// Get nodes and classify
 	nodes, err := clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		fmt.Printf("Failed to list nodes: %v\n", err)
 		return
 	}
-
 	for _, node := range nodes.Items {
 		nodeInfo := map[string]string{
 			"name":   node.Name,
@@ -44,14 +48,11 @@ func fetchClusterDetailsFromKubeconfig(kubeconfigPath string) (controlPlanes []i
 			workerNodes = append(workerNodes, nodeInfo)
 		}
 	}
-
-	// Get PVCs
 	pvcs, err := clientset.CoreV1().PersistentVolumeClaims("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		fmt.Printf("Failed to list PVCs: %v\n", err)
 		return
 	}
-
 	for _, pvc := range pvcs.Items {
 		pvcInfo := map[string]string{
 			"name":   pvc.Name,
@@ -119,4 +120,34 @@ func GetServices(clusterID int64) ([]map[string]interface{}, error) {
 	}
 
 	return serviceList, nil
+}
+
+func GetNamespaces(clusterID int64) ([]string, error) {
+	kubeconfigFilePath, err := GetKubeconfigFilePathByID(clusterID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kubeconfig file path: %w", err)
+	}
+
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build config from kubeconfig: %w", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %w", err)
+	}
+
+	ctx := context.Background()
+	namespaces, err := clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list namespaces: %w", err)
+	}
+
+	var namespaceList []string
+	for _, ns := range namespaces.Items {
+		namespaceList = append(namespaceList, ns.Name)
+	}
+
+	return namespaceList, nil
 }

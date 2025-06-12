@@ -1,9 +1,9 @@
-POST http://localhost:8000/kube/DR
+POST http://localhost:8000/kube/dr/apply
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTI0MzQ1MCwidXNlcklEIjoxfQ.P9fp7wei17jmLK08ubEhKbgSlgRwd5Peq5bewI5OlgE
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0
 
 {
     "source_cluster_id": 1,
     "destination_cluster_id": 2,
-    "dr_type": "active-passive"
+    "dr_type": "active-active"
 }

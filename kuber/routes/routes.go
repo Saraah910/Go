@@ -26,8 +26,9 @@ func Routes(server *gin.Engine) {
 	// authenticationGroups.DELETE("/kube/clusters/:id/delete", deleteCluster)
 	authenticationGroups.POST("/kube/infrastructure/aws", AWSInfra)
 	authenticationGroups.POST("/kube/infrastructure/nutanix", NutanixInfra)
+	// authenticationGroups.POST("/kube/infrastructure/vmware", VMwareInfra)
 
-	authenticationGroups.POST("/kube/DR", clusterDR)
+	authenticationGroups.POST("/kube/dr/apply", clusterDR)
 	clusterActionGroup := server.Group("/kube/cluster/actions")
 	clusterActionGroup.Use(Middleware.Authentication)
 	clusterActionGroup.GET(":id/services", getServices)
@@ -43,7 +44,7 @@ func Routes(server *gin.Engine) {
 	// clusterActionGroup.GET("/rolebindings", getRoleBindings)
 	// clusterActionGroup.GET("/clusterroles", getClusterRoles)
 	// clusterActionGroup.GET("/clusterrolebindings", getClusterRoleBindings)
-	// clusterActionGroup.GET("/namespaces", getNamespaces)
+	clusterActionGroup.GET(":id/namespaces", getNamespaces)
 	// clusterActionGroup.GET("/events", getEvents)
 
 }

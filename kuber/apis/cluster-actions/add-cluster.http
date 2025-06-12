@@ -1,9 +1,9 @@
 POST http://localhost:8000/kube/clusters/list
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTA2ODk0NSwidXNlcklEIjoxfQ.dqkkuBjP3rtO05LuoPXiw16y8FYypwf3dMx5Xx_endI
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0
 
 {
-    "name": "amma",
+    "name": "clus-02",
     "provisioner": "nutanix",
     "region": "us-east-1",
     "workspace": "new_workspace",
