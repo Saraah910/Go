@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"strconv"
 
 	"example.com/kuber/models"
 	"github.com/gin-gonic/gin"
@@ -48,7 +47,7 @@ func NutanixInfra(context *gin.Context) {
 		return
 	}
 	if !IsAuthorized {
-		context.JSON(http.StatusUnauthorized, gin.H{"Error": err})
+		context.JSON(http.StatusUnauthorized, gin.H{"Error": "Unauthorized"})
 		return
 	}
 	InfraInput.UserID = userID
@@ -61,15 +60,15 @@ func NutanixInfra(context *gin.Context) {
 
 }
 
-func getInfraForUser(ctx *gin.Context) {
-	KeyString := ctx.Param("id")
-	userID, err := strconv.ParseInt(KeyString, 10, 64)
+// func getInfraForUser(ctx *gin.Context) {
+// 	KeyString := ctx.Param("id")
+// 	userID, err := strconv.ParseInt(KeyString, 10, 64)
 
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"Msg": err.Error()})
-	}
-	models.GetInfraByUserID(userID)
-}
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, gin.H{"Msg": err.Error()})
+// 	}
+// 	models.GetInfraByUserID(userID)
+// }
 
 func getAllInfrastructures(context *gin.Context) {
 	infrastructures, err := models.GetInfrastructures()
@@ -77,5 +76,5 @@ func getAllInfrastructures(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Could not fetch results.", "Error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"Message": "Successfully fetched infrastructures", "clusters": infrastructures})
+	context.JSON(http.StatusOK, gin.H{"Message": "Successfully fetched infrastructures", "infrastructures": infrastructures})
 }

@@ -19,12 +19,13 @@ type AWSInfra struct {
 }
 
 type InfraList struct {
-	InfraID   int64
-	Name      string
-	Provider  string
-	IsDefault bool
-	CreatedAt time.Time
-	UserID    int64
+	InfraID   string          `json:"infra_id"`
+	Name      string          `json:"name"`
+	Provider  string          `json:"provider"`
+	IsDefault bool            `json:"is_default"`
+	CreatedAt time.Time       `json:"created_at"`
+	UserID    int64           `json:"user_id"`
+	Config    json.RawMessage `json:"config"`
 }
 
 type NutanixInfra struct {
@@ -36,7 +37,7 @@ type NutanixInfra struct {
 	UserID      int64  `json:"user_id"`
 }
 
-func (n *NutanixInfra) SaveNutanixInfra() (int64, error) {
+func (n *NutanixInfra) SaveNutanixInfra() (string, error) {
 	config := map[string]interface{}{
 		"infra_name":   n.Name,
 		"endpoint":     n.Endpoint,
@@ -47,40 +48,52 @@ func (n *NutanixInfra) SaveNutanixInfra() (int64, error) {
 	}
 	configJson, err := json.Marshal(config)
 	if err != nil {
-		return 0, fmt.Errorf("failed to marshal config: %w", err)
+		return "", fmt.Errorf("failed to marshal config: %w", err)
 	}
-	query := `INSERT INTO infra (name,provider,config,user_id) VALUES($1,$2,$3,$4) RETURNING id`
-	var nutanix_infra_id int64
-	err = db.DB.QueryRow(query, &n.Name, "nutanix", configJson, &n.UserID).Scan(&nutanix_infra_id)
+
+	infraID, err := db.GetUUID()
 	if err != nil {
-		return 0, fmt.Errorf("failed to add into DB: %w", err)
+		return "", fmt.Errorf("failed to generate UUID: %w", err)
 	}
-	return nutanix_infra_id, nil
+
+	query := `INSERT INTO infra (id, name, provider, config, user_id) VALUES($1, $2, $3, $4, $5)`
+	_, err = db.DB.Exec(query, infraID, n.Name, "nutanix", configJson, n.UserID)
+	if err != nil {
+		return "", fmt.Errorf("failed to insert into DB: %w", err)
+	}
+
+	return infraID, nil
 }
 
-func (i *AWSInfra) SaveAWSInfra() (int64, error) {
+func (i *AWSInfra) SaveAWSInfra() (string, error) {
 	config := map[string]interface{}{
+		"infra_name": i.Name,
 		"access_key": i.AccessKey,
 		"secret_key": i.SecretKey,
 		"region":     i.Region,
 		"vpc_id":     i.VPC_ID,
 		"subnet_ids": i.SubnetIDs,
+		"user_id":    i.UserID,
 	}
 	configJSON, err := json.Marshal(config)
 	if err != nil {
-		return 0, fmt.Errorf("failed to marshal config: %w", err)
+		return "", fmt.Errorf("failed to marshal config: %w", err)
 	}
-	query := `INSERT INTO infra (name,provider,config,is_default,user_id) VALUES($1,$2,$3,$4,$5) RETURNING id`
-	var aws_cluster_id int64
-	err = db.DB.QueryRow(query, i.Name, "aws", configJSON, "No", i.UserID).Scan(&aws_cluster_id)
+	infraID, err := db.GetUUID()
 	if err != nil {
-		return 0, fmt.Errorf("failed to add into DB: %w", err)
+		return "", fmt.Errorf("failed to generate UUID: %w", err)
 	}
-	return aws_cluster_id, nil
+
+	query := `INSERT INTO infra (id, name, provider, config, user_id) VALUES ($1, $2, $3, $4, $5)`
+	_, err = db.DB.Exec(query, infraID, i.Name, "aws", configJSON, i.UserID)
+	if err != nil {
+		return "", fmt.Errorf("failed to add into DB: %w", err)
+	}
+	return infraID, nil
 }
 
 func GetInfrastructures() ([]InfraList, error) {
-	query := `SELECT id, name, provider, is_default, created_at, user_id FROM infra`
+	query := `SELECT id, name, provider, is_default, created_at, config, user_id FROM infra`
 	rows, err := db.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("%s", err.Error())
@@ -88,7 +101,7 @@ func GetInfrastructures() ([]InfraList, error) {
 	var infraList []InfraList
 	for rows.Next() {
 		var infra InfraList
-		err := rows.Scan(&infra.InfraID, &infra.Name, &infra.Provider, &infra.IsDefault, &infra.CreatedAt, &infra.UserID)
+		err := rows.Scan(&infra.InfraID, &infra.Name, &infra.Provider, &infra.IsDefault, &infra.CreatedAt, &infra.Config, &infra.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("%s", err.Error())
 		}
@@ -133,7 +146,7 @@ func GetInfraByUserID(userID int64) ([]InfraList, error) {
 	var userSpecificInfraList []InfraList
 	for rows.Next() {
 		var infra InfraList
-		err := rows.Scan(&infra.InfraID, &infra.Name, &infra.Provider, &infra.IsDefault, &infra.CreatedAt, &infra.UserID)
+		err := rows.Scan(&infra.InfraID, &infra.Name, &infra.Provider, &infra.IsDefault, &infra.CreatedAt, &infra.Config, &infra.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("%s", err.Error())
 		}

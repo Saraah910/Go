@@ -1,11 +1,11 @@
 POST http://localhost:8000/kube/clusters/list
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc1MDIwMjg3NSwidXNlcklEIjoxfQ.BuhKf3P8pHZ7TFY6JTPQZ_XInFQkuUAUL-7p8-0vI3k
 
 {
     "name": "clus-02",
     "provisioner": "nutanix",
     "region": "us-east-1",
-    "workspace": "new_workspace",
+    "workspace_name": "new_workspace-2",
     "kubeconfig_file_path": "/Users/sakshi.aherkar/.kube/config"
 }

@@ -1,6 +1,6 @@
 POST http://localhost:8000/kube/infrastructure/nutanix
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QyQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0ODQ2MTYyMSwidXNlcklEIjoyfQ.S8NWy64iJBMxZPBrW_gGrYfn2yT_6wVGH3g3_MFyeYA
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc1MDAwMDkzMSwidXNlcklEIjoxfQ.brP8Qw1TC7-QxoEoS7ZizEp4LFWFZgxYuA0_-OFz4kU
 
 {
     "infra_name": "nutanix-DR",

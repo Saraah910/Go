@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"strconv"
 
 	"example.com/kuber/models"
 	"github.com/gin-gonic/gin"
@@ -10,12 +9,12 @@ import (
 
 func getServices(context *gin.Context) {
 	clusterIDStr := context.Param("id")
-	clusterID, err := strconv.ParseInt(clusterIDStr, 10, 64)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid cluster ID.", "Error": err.Error()})
-		return
-	}
-	services, err := models.GetServices(clusterID)
+	// clusterID, err := strconv.ParseInt(clusterIDStr, 10, 64)
+	// if err != nil {
+	// 	context.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid cluster ID.", "Error": err.Error()})
+	// 	return
+	// }
+	services, err := models.GetServices(clusterIDStr)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Could not fetch services.", "Error": err.Error()})
 		return
@@ -24,12 +23,12 @@ func getServices(context *gin.Context) {
 }
 func getNamespaces(context *gin.Context) {
 	clusterIDStr := context.Param("id")
-	clusterID, err := strconv.ParseInt(clusterIDStr, 10, 64)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid cluster ID.", "Error": err.Error()})
-		return
-	}
-	namespaces, err := models.GetNamespaces(clusterID)
+	// clusterID, err := strconv.Parse(clusterIDStr, 10, 64)
+	// if err != nil {
+	// 	context.JSON(http.StatusBadRequest, gin.H{"Message": "Invalid cluster ID.", "Error": err.Error()})
+	// 	return
+	// }
+	namespaces, err := models.GetNamespaces(clusterIDStr)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Could not fetch namespaces.", "Error": err.Error()})
 		return

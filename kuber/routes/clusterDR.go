@@ -8,8 +8,8 @@ import (
 )
 
 type ClusterDRRequest struct {
-	SourceClusterID      int64  `json:"source_cluster_id" binding:"required"`
-	DestinationClusterID int64  `json:"destination_cluster_id" binding:"required"`
+	SourceClusterID      string `json:"source_cluster_id" binding:"required"`
+	DestinationClusterID string `json:"destination_cluster_id" binding:"required"`
 	DRtype               string `json:"dr_type" binding:"required" validate:"oneof=active-passive active-active"`
 }
 
@@ -49,7 +49,6 @@ func clusterDR(context *gin.Context) {
 	// 	})
 	// 	return
 	// }
-	// Check if source and destination clusters exist
 	sourceCluster, err := models.GetClusterByID(ClusterDRReq.SourceClusterID)
 	if err != nil {
 		context.JSON(500, gin.H{

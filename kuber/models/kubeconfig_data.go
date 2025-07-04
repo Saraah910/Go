@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
 func GetKubeClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
@@ -22,6 +23,20 @@ func GetKubeClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return clientset, nil
+}
+
+func GetMetricClient(kubeconfigPath string) (*versioned.Clientset, error) {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if err != nil {
+		fmt.Printf("Failed to load kubeconfig: %v\n", err)
+		return nil, err
+	}
+	metricClientset, err := versioned.NewForConfig(config)
+	if err != nil {
+		fmt.Printf("Failed to create Kubernetes metric client: %v\n", err)
+		return nil, err
+	}
+	return metricClientset, nil
 }
 
 func fetchClusterDetailsFromKubeconfig(kubeconfigPath string) (controlPlanes []interface{}, workerNodes []interface{}, storageContainers []interface{}) {
@@ -82,7 +97,7 @@ func getNodeReadyStatus(node v1.Node) v1.ConditionStatus {
 	return v1.ConditionUnknown
 }
 
-func GetServices(clusterID int64) ([]map[string]interface{}, error) {
+func GetServices(clusterID string) ([]map[string]interface{}, error) {
 
 	kubeconfigFilePath, err := GetKubeconfigFilePathByID(clusterID)
 	if err != nil {
@@ -122,7 +137,7 @@ func GetServices(clusterID int64) ([]map[string]interface{}, error) {
 	return serviceList, nil
 }
 
-func GetNamespaces(clusterID int64) ([]string, error) {
+func GetNamespaces(clusterID string) ([]string, error) {
 	kubeconfigFilePath, err := GetKubeconfigFilePathByID(clusterID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get kubeconfig file path: %w", err)

@@ -1,2 +1,2 @@
-GET http://localhost:8000/kube/cluster/actions/2/namespaces
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0
+GET http://localhost:8000/kube/cluster/actions/b88c282f-dd8e-4b99-92f5-8ff2b0cddac9/namespaces
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc1MDIwMjg3NSwidXNlcklEIjoxfQ.BuhKf3P8pHZ7TFY6JTPQZ_XInFQkuUAUL-7p8-0vI3k

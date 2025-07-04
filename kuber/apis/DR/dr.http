@@ -1,9 +1,9 @@
 POST http://localhost:8000/kube/dr/apply
 Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTM5MjMwNywidXNlcklEIjoxfQ.q9Zfi3OEXhUYIYxIyyAhKi-g_TZcADeMBFxNiPFl8u0
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsImV4cGlyeSI6MTc0OTgxNDc5NywidXNlcklEIjoxfQ.voMuNnwIRUwTdeqI-oGqPj3lWwwwVkeD0tpfSWfsUw0
 
 {
-    "source_cluster_id": 1,
-    "destination_cluster_id": 2,
+    "source_cluster_id": "b88c282f-dd8e-4b99-92f5-8ff2b0cddac9",
+    "destination_cluster_id": "007c62b8-1f3c-447a-93a7-f6fea4225456",
     "dr_type": "active-active"
 }

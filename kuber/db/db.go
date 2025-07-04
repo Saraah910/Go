@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -48,28 +49,51 @@ func createTables() error {
 		return fmt.Errorf("error creating users table: %w", err)
 	}
 
+	workspaceTable := `
+	CREATE TABLE IF NOT EXISTS workspaces (
+		id TEXT NOT NULL PRIMARY KEY,
+		name TEXT NOT NULL UNIQUE,
+		description TEXT,
+		owner_id INTEGER NOT NULL,
+		created_at TIMESTAMPTZ DEFAULT now(),
+		members JSONB DEFAULT '[]',
+		roles JSONB DEFAULT '[]',
+		cluster_count INTEGER DEFAULT 0,
+		cloud_providers JSONB DEFAULT '[]',
+		apps_count INTEGER DEFAULT 0,
+		monitoring_enabled BOOLEAN DEFAULT FALSE,
+		logging_enabled BOOLEAN DEFAULT FALSE,
+		tags JSONB DEFAULT '{}',
+		FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE
+	);`
+
+	if _, err := DB.Exec(workspaceTable); err != nil {
+		return fmt.Errorf("error creating workspaces table: %w", err)
+	}
+
 	kubeClusterTable := `
 	CREATE TABLE IF NOT EXISTS clusters (
-		id SERIAL PRIMARY KEY,
+		id TEXT NOT NULL PRIMARY KEY,
 		name TEXT NOT NULL UNIQUE,
 		provisioner TEXT NOT NULL CHECK (provisioner IN ('aws', 'azure', 'gcp', 'nutanix', 'vmware')),
 		region TEXT NOT NULL,
-		workspace TEXT NOT NULL DEFAULT 'default',
 		kubeconfig TEXT NOT NULL,
-		created_at TEXT NOT NULL,
-		updated_at TEXT NOT NULL,
+		created_at TIMESTAMPTZ DEFAULT now(),
+		updated_at TIMESTAMPTZ DEFAULT now(),
 		user_id INTEGER,
+		workspace_id TEXT NOT NULL,
 		status TEXT NOT NULL DEFAULT 'Pending',
-		FOREIGN KEY(user_id) REFERENCES users(id)
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+		FOREIGN KEY(workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
 	);`
 
 	if _, err := DB.Exec(kubeClusterTable); err != nil {
-		return fmt.Errorf("error creating kubeclusters table: %w", err)
+		return fmt.Errorf("error creating clusters table: %w", err)
 	}
 
-	InfraTable := `
+	infraTable := `
 	CREATE TABLE IF NOT EXISTS infra (
-		id SERIAL PRIMARY KEY,
+		id TEXT NOT NULL PRIMARY KEY,
 		name TEXT NOT NULL,
 		provider TEXT NOT NULL CHECK (provider IN ('aws', 'gcp', 'azure', 'nutanix')),
 		config JSONB NOT NULL,
@@ -77,12 +101,16 @@ func createTables() error {
 		created_at TIMESTAMPTZ DEFAULT now(),
 		updated_at TIMESTAMPTZ DEFAULT now(),
 		user_id INTEGER,
-		FOREIGN KEY(user_id) REFERENCES users(id)
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
 	);`
 
-	if _, err := DB.Exec(InfraTable); err != nil {
-		return fmt.Errorf("error creating users table: %w", err)
+	if _, err := DB.Exec(infraTable); err != nil {
+		return fmt.Errorf("error creating infra table: %w", err)
 	}
 
 	return nil
+}
+
+func GetUUID() (string, error) {
+	return uuid.New().String(), nil
 }
