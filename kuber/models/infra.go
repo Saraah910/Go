@@ -110,7 +110,7 @@ func GetInfrastructures() ([]InfraList, error) {
 	return infraList, nil
 }
 
-func GetInfraByName(name string) (*NutanixInfra, error) {
+func GetInfraByName(name string) (*InfraList, error) {
 	query := `SELECT name, config, user_id FROM infra WHERE name = $1`
 
 	var (
@@ -125,16 +125,16 @@ func GetInfraByName(name string) (*NutanixInfra, error) {
 		return nil, fmt.Errorf("failed to query infra: %w", err)
 	}
 
-	var nutanixInfra NutanixInfra
-	err = json.Unmarshal(configJSON, &nutanixInfra)
+	var infra InfraList
+	err = json.Unmarshal(configJSON, &infra)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config JSON: %w", err)
 	}
 
-	nutanixInfra.Name = infraName
-	nutanixInfra.UserID = userID
+	infra.Name = infraName
+	infra.UserID = userID
 
-	return &nutanixInfra, nil
+	return &infra, nil
 }
 
 func GetInfraByUserID(userID int64) ([]InfraList, error) {

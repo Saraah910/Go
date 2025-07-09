@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -109,49 +110,53 @@ func getClustersByWorkspace(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"Message": "Successfully fetched clusters by workspace UUID", "clusters": workspace})
 }
 
-// func createCluster(context *gin.Context) {
-// 	var cluster models.Cluster
-// 	err := context.ShouldBindJSON(&cluster)
-// 	if err != nil {
-// 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Check parameters", "Error": err.Error()})
-// 		return
-// 	}
-// 	userID := context.GetInt64("userID")
-// 	role, permission, err := models.GetPermission(userID)
-// 	if err != nil {
-// 		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot get roles and permissions"})
-// 		return
-// 	}
-// 	if role != "admin" {
-// 		if permission != "write" && permission != "full" {
-// 			context.JSON(http.StatusBadRequest, gin.H{"Message": "No permission to create cluster."})
-// 			return
-// 		}
-// 	}
-// 	if cluster.WorkspaceName == "" {
-// 		cluster.WorkspaceName = "default"
-// 	}
-// 	workspaceID, err := models.GetWorkspaceIDByName(cluster.WorkspaceName)
-// 	if err != nil {
-// 		context.JSON(http.StatusBadRequest, gin.H{"Message": "Workspace not found", "Error": err.Error()})
-// 		return
-// 	}
-// 	infraList := models.GetInfraByName(cluster.Provisioner)
-// 	uuid, err := db.GetUUID()
-// 	if err != nil {
-// 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot generate UUID", "Error": err.Error()})
-// 		return
-// 	}
-// 	cluster.ID = uuid
-// 	cluster.WorkspaceID = workspaceID
-// 	cluster.Status = "Completed"
-// 	cluster.UserID = userID
-// 	cluster.CreatedAt = time.Now()
-// 	cluster.UpdatedAt = time.Now()
-// 	err = cluster.SaveCluster()
-// 	if err != nil {
-// 		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot create cluster", "Error": err.Error()})
-// 		return
-// 	}
-// 	context.JSON(http.StatusOK, gin.H{"Message": "Successfully saved cluster", "cluster": cluster})
-// }
+func createCluster(context *gin.Context) {
+	var cluster models.Cluster
+	err := context.ShouldBindJSON(&cluster)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Check parameters", "Error": err.Error()})
+		return
+	}
+	userID := context.GetInt64("userID")
+	role, permission, err := models.GetPermission(userID)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Cannot get roles and permissions"})
+		return
+	}
+	if role != "admin" {
+		if permission != "write" && permission != "full" {
+			context.JSON(http.StatusBadRequest, gin.H{"Message": "No permission to create cluster."})
+			return
+		}
+	}
+	if cluster.WorkspaceName == "" {
+		cluster.WorkspaceName = "default"
+	}
+	workspaceID, err := models.GetWorkspaceIDByName(cluster.WorkspaceName)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"Message": "Workspace not found", "Error": err.Error()})
+		return
+	}
+	infraList, err := models.GetInfraByName(cluster.Provisioner)
+	if err != nil {
+		return
+	}
+	fmt.Println(infraList)
+	uuid, err := db.GetUUID()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot generate UUID", "Error": err.Error()})
+		return
+	}
+	cluster.ID = uuid
+	cluster.WorkspaceID = workspaceID
+	cluster.Status = "Completed"
+	cluster.UserID = userID
+	cluster.CreatedAt = time.Now()
+	cluster.UpdatedAt = time.Now()
+	err = cluster.SaveCluster()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"Message": "Cannot create cluster", "Error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"Message": "Successfully saved cluster", "cluster": cluster})
+}

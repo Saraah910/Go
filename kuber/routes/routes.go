@@ -22,7 +22,7 @@ func Routes(server *gin.Engine) {
 	authenticationGroups.PUT("/users/:id/update", updateUser)
 	authenticationGroups.GET("/kube/clusters/list/user", getClustersForUser)
 	authenticationGroups.POST("/kube/workspaces/list", createWorkspace)
-	// authenticationGroups.POST("/kube/cluster/create", createCluster)
+	authenticationGroups.POST("/kube/cluster/create", createCluster)
 	authenticationGroups.GET("/kube/cluster/workspaces/:workspace_uuid", getClustersByWorkspace)
 	authenticationGroups.GET("/kube/users/list/permission", getPermissions)
 	authenticationGroups.DELETE("/users/:id/delete", deleteUser)
