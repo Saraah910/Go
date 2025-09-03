@@ -1,0 +1,6 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: mgeorge67701-provider-nutanix
+spec:
+  package: xpkg.upbound.io/mgeorge67701/provider-nutanix:1.0.33

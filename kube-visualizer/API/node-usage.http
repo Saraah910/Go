@@ -1,0 +1,6 @@
+POST http://localhost:5000/health
+Accept: application/json
+
+{
+    "file_name": "astrophile-kubeconfig.yaml"
+}

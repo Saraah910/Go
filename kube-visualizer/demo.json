@@ -1,0 +1,42 @@
+{
+    "nodes": [{
+        "itemStyle": {"color": "#4f19c7"},
+        "name": "jquery",
+        "y": -404.26147,
+        "x": -739.36383,
+        "symbolSize": 40.7252817,
+        "value": 40.7252817
+    }, {
+        "itemStyle": {"color": "#c71969"},
+        "name": "backbone",
+        "y": -862.7517,
+        "x": -134.2215,
+        "symbolSize": 65.1554675
+    }, {
+        "itemStyle": {"color": "#c71969"},
+        "name": "underscore",
+        "y": -734.4221,
+        "x": -75.53079,
+        "symbolSize": 80.0
+    }, {
+        "itemStyle": {"color": "#c71969"},
+        "name": "faye",
+        "y": 624.50604,
+        "x": -818.97516,
+        "symbolSize": 35.67816025
+    }],
+    "links": [{
+            "source": "jquery",
+            "target": "underscore"
+        }, {
+            "source": "backbone",
+            "target": "underscore"
+        },
+        {
+            "source": "backbone",
+            "target": "jquery"
+        }, {
+            "source": "faye",
+            "target": "jquery"
+        }]
+}
